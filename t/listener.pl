@@ -29,11 +29,24 @@ $method = GRNOC::RabbitMQ::Method->new(
 $method->add_input_parameter(
     name => 'a',
     description => "first addend",
-    pattern => '^(-?[0-9]+)$' );
+    pattern => '^(-?[0-9]+)$');
 $method->add_input_parameter(
     name => 'b',
     description => "second addend",
-    pattern => '^(-?[0-9]+)$' );
+    pattern => '^(-?[0-9]+)$');
+$dispatcher->register_method($method);
+
+$method = GRNOC::RabbitMQ::Method->new(
+    name => "list_array",
+    description => "lists an array",
+    callback => \&list_array);
+$method->add_input_parameter(
+    name => "some_array",
+    description => "array to list",
+    schema => {
+	type => "array",
+	items => [ {'type' => 'string'} ]
+    });
 $dispatcher->register_method($method);
 
 $dispatcher->start_consuming();
@@ -47,4 +60,10 @@ sub plus {
 
 sub get {
     return {success => 1};
+}
+
+sub list_array {
+    my ($method_obj,$params,$state) = @_;
+    my $list = $params->{'some_array'}{'value'};
+    return $list;
 }
